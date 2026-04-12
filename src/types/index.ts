@@ -1,22 +1,40 @@
 import { z } from "zod";
 
+//----------------
+// -- Departure --
 export const RouteStopSchema = z.enum([
   "Bergen",
   "Stavanger",
   "Hirtshals",
   "Kristiansand",
 ]);
+
+/**
+ * Possible values of a stop along a journey.
+ */
 export type RouteStop = z.infer<typeof RouteStopSchema>;
 
 export const LegSchema = z.object({
   from: RouteStopSchema,
   to: RouteStopSchema,
-  departureTime: z.string(),
-  arrivalTime: z.string(),
-  occupiedPassengers: z.number(),
-  occupiedVehicles: z.number(),
+  departureTime: z.iso.datetime({
+    message: "Ugyldig datoformat (ISO 8601 kreves)",
+  }),
+  arrivalTime: z.iso.datetime({
+    message: "Ugyldig datoformat (ISO 8601 kreves)",
+  }),
+  occupiedPassengerCapacity: z.number().nonnegative(),
+  occupiedVehicleCapacity: z.number().nonnegative(),
+}).refine((data) => {
+  return new Date(data.arrivalTime) > new Date(data.departureTime);
+}, {
+  message: "Ankomsttid må være etter avreisetid",
+  path: ["arrivalTime"]
 });
 
+/**
+ * Type of a leg along a journey.
+ */
 export type Leg = z.infer<typeof LegSchema>;
 
 export const DepartureSchema = z.object({
@@ -26,9 +44,26 @@ export const DepartureSchema = z.object({
   legs: z.array(LegSchema).min(1),
 });
 
-export type Departure = z.infer<typeof DepartureSchema>;
+export const DepartureResponseSchema = DepartureSchema.omit({
+  maxPassengerCapacity: true,
+  maxVehicleCapacity: true,
+}).extend({
+  legs: z.array(
+    // Hide details from client and replace by UI centered data
+    LegSchema.omit({
+      occupiedPassengerCapacity: true,
+      occupiedVehicleCapacity: true,
+    }).extend({ freeSeats: z.number(), hasVehicleCapacity: z.boolean() }),
+  ),
+});
 
+/** Type of object given as reponse to a Departure API call. */
+export type DepartureResponse = z.infer<typeof DepartureResponseSchema>;
+
+//----------------
+// -- Vechicle --
 export const VehicleTypeSchema = z.enum(["bicycle", "car", "bus"]);
+
 export type VehicleType = z.infer<typeof VehicleTypeSchema>;
 
 export const VEHICLE_WEIGHTS: Record<VehicleType, number> = {
@@ -52,9 +87,9 @@ export const VechileSchema = z
     }
 
     if (data.regNumber) {
-
-      // Dummy check, put actual API call to very plate here
-      const isValid = data.regNumber.length > 4; 
+      // Check the license plate for information if needed
+      const isValid = true;
+      // example logic
       if (!isValid) {
         ctx.addIssue({
           code: "custom",
@@ -65,10 +100,32 @@ export const VechileSchema = z
     }
   });
 
+//----------------  
+// -- Contact --
+export const NameSchema = z
+.object({
+  firstAndMiddle: z.string(),
+  last: z.string()
+})
+
+export const PhoneSchema = z
+.object({
+  countryCode: z.string(),
+  number: z.e164()
+})
+
+export const ContactSchema = z
+.object({
+  name: NameSchema,
+  email: z.email("Ugyldig epostadresse"),
+  phone: PhoneSchema.optional()
+})
+
+//----------------
+// -- Booking --
 export const CreateBookingSchema = z
   .object({
-    contactName: z.string().min(2, "Navn må være minst 2 tegn").max(100),
-    contactEmail: z.email("Ugyldig epostadresse"),
+    contact: ContactSchema,
     from: RouteStopSchema,
     to: RouteStopSchema,
 
@@ -85,6 +142,12 @@ export const CreateBookingSchema = z
     path: ["to"],
   });
 
+/**
+ * Type of input given when creating a booking.
+ */
+export type CreateBookingInput = Required<z.infer<typeof CreateBookingSchema>>;
+
+/** Type of a booking object on the server. */
 export interface Booking extends z.infer<typeof CreateBookingSchema> {
   id: string;
   departureId: string;
