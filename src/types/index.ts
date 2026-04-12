@@ -44,6 +44,8 @@ export const DepartureSchema = z.object({
   legs: z.array(LegSchema).min(1),
 });
 
+export type Departure = z.infer<typeof DepartureSchema>;
+
 export const DepartureResponseSchema = DepartureSchema.omit({
   maxPassengerCapacity: true,
   maxVehicleCapacity: true,
