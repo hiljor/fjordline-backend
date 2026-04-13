@@ -16,7 +16,7 @@ Jeg deler inn i Departure og Passenger:
 - **Departure**
   - Har felt som ID, ruten til skipet, og kapasistet for passasjerer og kjøretøy. Her velger jeg å representere ruten som en rekke legs, hvor hver leg har et startsted, sluttsted, tid for avgang og ankomst, samt booket passjerantall og kjøretøyvekt. I alt skaper dette en fleksibel modell som gjør det enkelt å filtrere når det kommer filterargumenter til apien. For eksempel kan det bes om å levere ruter fra stavanger før et visst tidspunkt eller dato, eller ankommer Hirtshals til en viss tid.
 - **Booking**
-  - Har felt som ID, navn, epost, antall passasjerer, og kjøretøy. For kjøretøy registreres skiltnummer for hvert kjøretøy slik at det om ønskelig er mulig å hente data om kjøretøyet eller bekrefte at kjøretøyet eksisterer og er riktig type. Det er også mulig å registrere flere kjøretøy. Jeg avgrenser antall passasjerer til 20 for å ha en grense.
+  - Har felt som Contact, antall passasjerer, og kjøretøy. For kjøretøy registreres skiltnummer for hvert kjøretøy slik at det om ønskelig er mulig å hente data om kjøretøyet eller bekrefte at kjøretøyet eksisterer og er riktig type. Det er også mulig å registrere flere kjøretøy. Jeg avgrenser antall passasjerer til 20 for å ha en grense.
   
 
 
