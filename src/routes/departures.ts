@@ -17,7 +17,7 @@ const router = Router();
 /**
  * Tranform an internal Departure object to a DepartureResponse.
  */
-const mapToResponse = (departure: Departure): DepartureResponse => {
+function mapToResponse(departure: Departure): DepartureResponse {
   return {
     id: departure.id,
     legs: departure.legs.map((leg) => ({
@@ -68,18 +68,16 @@ router.get("/:id", (req: Request, res: Response) => {
 router.post("/:id/bookings", async (req, res) => {
   const departureId = req.params.id;
 
-  // Finn avgangen
+  // Find departure
   const departure = departures.find((d) => d.id === departureId);
   if (!departure) return res.status(404).json({ error: "Avgang ikke funnet" });
 
-  // Valider input (navn, passasjerer, kjøretøy)
+  // Validate input
   const result = await CreateBookingSchema.safeParseAsync(req.body);
-  if (!result.success) return res.status(400).json(result.error.flatten());
+  if (!result.success) return res.status(400).json(z.treeifyError(result.error));
 
+  // if ok, continue
   const input = result.data;
-
-  // LOGIKK: Her kaller du kapasitetssjekken din (steg 4 i prosessen vår)
-  // Hvis OK:
   const newBooking: Booking = {
     ...input,
     id: uuidv4(),
