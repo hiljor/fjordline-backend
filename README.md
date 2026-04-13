@@ -23,3 +23,4 @@ Jeg deler inn i Departure og Passenger:
 ## Ideer
 
 - Legg til shipId i DepartureResponse, alternativt skipnavn så det kan hentes informasjon om fasiliteter om bord
+- Legge til .trim() i string typer for å forhindre enkle feil
