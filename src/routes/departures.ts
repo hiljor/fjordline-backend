@@ -11,6 +11,7 @@ import {
 } from "../types";
 import { v4 as uuidv4 } from "uuid";
 import { totalVehicleWeight, validateRouteOrder } from "../services/capacity";
+import { tryReserveBooking } from "../services/booking";
 
 const router = Router();
 
@@ -93,8 +94,12 @@ router.post("/:id/bookings", async (req, res) => {
     totalVehicleWeight: input.vehicles ? totalVehicleWeight(input.vehicles) : 0, 
   };
 
-  bookings.push(newBooking);
-  res.status(201).json(newBooking);
+  // Check if the requested journey has space, return 409 Conflict if not
+  const bookingResult = tryReserveBooking(departure, newBooking);
+  if (!bookingResult.success) return res.status(409).json(bookingResult.message)
 });
+
+router.delete("/:id/bookings/{booking}")
+
 
 export default router;
