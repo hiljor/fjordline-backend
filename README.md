@@ -20,3 +20,6 @@ Jeg deler inn i Departure og Passenger:
   
 
 
+## Ideer
+
+- Legg til shipId i DepartureResponse, alternativt skipnavn så det kan hentes informasjon om fasiliteter om bord
