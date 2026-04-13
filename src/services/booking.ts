@@ -19,7 +19,7 @@ export function tryReserveBooking(
   // 1. Check passanger capacity
   const hasPassengerSpace = affectedLegs.every(
     (leg) =>
-      leg.occupiedPassengerCapacity + passengers <=
+      leg.occupiedPassengerCapacity + passengers.length <=
       departure.maxPassengerCapacity,
   );
 
@@ -44,7 +44,7 @@ export function tryReserveBooking(
 
   // If ok, complete reservation
   affectedIndices.forEach((i) => {
-    departure.legs[i].occupiedPassengerCapacity += passengers;
+    departure.legs[i].occupiedPassengerCapacity += passengers.length;
     departure.legs[i].occupiedVehicleCapacity += booking.totalVehicleWeight;
   });
 
@@ -72,7 +72,7 @@ export function deleteBooking(
 
   // Update legs
   affectedIndices.forEach((i) => {
-    departure.legs[i].occupiedPassengerCapacity -= booking.passengers;
+    departure.legs[i].occupiedPassengerCapacity -= booking.passengers.length;
     departure.legs[i].occupiedVehicleCapacity -= booking.totalVehicleWeight;
   });
 

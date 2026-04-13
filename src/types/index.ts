@@ -128,6 +128,12 @@ export const ContactSchema = z
   phone: PhoneSchema.optional()
 })
 
+export const PassengerSchema = z
+.object({
+  name: NameSchema
+})
+
+
 //----------------
 // -- Booking --
 
@@ -135,7 +141,7 @@ export const CreateBookingSchema = z.object({
   contact: ContactSchema,
   from: RouteStopSchema,
   to: RouteStopSchema,
-  passengers: z.number().int().positive().max(20),
+  passengers: z.array(PassengerSchema).nonempty("At least one passenger must be given"),
   vehicles: z.array(VehicleSchema).optional(),
 }).refine((data) => data.from !== data.to, {
   message: "Avreise og destinasjon kan ikke være samme sted",
