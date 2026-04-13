@@ -105,6 +105,8 @@ export const VehicleSchema = z
     }
   });
 
+export type Vehicle = z.infer<typeof VehicleSchema>;
+
 //----------------  
 // -- Contact --
 export const NameSchema = z

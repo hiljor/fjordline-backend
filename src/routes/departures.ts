@@ -7,8 +7,10 @@ import {
   VEHICLE_WEIGHTS,
   Departure,
   DepartureResponse,
+  RouteStop,
 } from "../types";
 import { v4 as uuidv4 } from "uuid";
+import { totalVehicleWeight, validateRouteOrder } from "../services/capacity";
 
 const router = Router();
 
@@ -72,17 +74,23 @@ router.post("/:id/bookings", async (req, res) => {
   const departure = departures.find((d) => d.id === departureId);
   if (!departure) return res.status(404).json({ error: "Avgang ikke funnet" });
 
-  // Validate input
-  const result = await CreateBookingSchema.safeParseAsync(req.body);
-  if (!result.success) return res.status(400).json(z.treeifyError(result.error));
+  // --- Validate input ---
+  // Zod validation
+  const zodResult = await CreateBookingSchema.safeParseAsync(req.body);
+  if (!zodResult.success) return res.status(400).json(z.treeifyError(zodResult.error));
+  const input = zodResult.data;
 
-  // if ok, continue
-  const input = result.data;
+  // Route validation
+  const { from, to, passengers } = zodResult.data;
+  const routeResult = validateRouteOrder(departure, from, to);
+  if (!routeResult.isValid) return res.status(400).json({message: routeResult.error})
+
+  // --- Create Booking ---
   const newBooking: Booking = {
     ...input,
     id: uuidv4(),
     departureId: departureId,
-    totalVehicleWeight: 0, // Beregn denne basert på VEHICLE_WEIGHTS
+    totalVehicleWeight: input.vehicles ? totalVehicleWeight(input.vehicles) : 0, 
   };
 
   bookings.push(newBooking);
