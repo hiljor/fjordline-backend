@@ -38,7 +38,7 @@ export const LegSchema = z.object({
 export type Leg = z.infer<typeof LegSchema>;
 
 export const DepartureSchema = z.object({
-  id: z.string().min(1),
+  id: z.uuid(),
   maxPassengerCapacity: z.number().int().positive(),
   maxVehicleCapacity: z.number().positive(),
   legs: z.array(LegSchema).min(1),
@@ -106,13 +106,13 @@ export const VechileSchema = z
 // -- Contact --
 export const NameSchema = z
 .object({
-  firstAndMiddle: z.string(),
-  last: z.string()
+  firstAndMiddle: z.string().min(1),
+  last: z.string().min(1)
 })
 
 export const PhoneSchema = z
 .object({
-  countryCode: z.string(),
+  countryCode: z.string().min(1),
   number: z.e164()
 })
 
@@ -125,8 +125,16 @@ export const ContactSchema = z
 
 //----------------
 // -- Booking --
-export const CreateBookingSchema = z
-  .object({
+export const BookingSchema = z
+.object({
+  id: z.uuid(),
+  departureId: z.uuid(),
+  totalVehicleWeight: z.number().nonnegative("Total kjøretøyvekt kan ikke være negativ")
+})
+
+
+export const CreateBookingSchema = BookingSchema
+.extend({
     contact: ContactSchema,
     from: RouteStopSchema,
     to: RouteStopSchema,
@@ -144,14 +152,13 @@ export const CreateBookingSchema = z
     path: ["to"],
   });
 
+
+
 /**
  * Type of input given when creating a booking.
  */
 export type CreateBookingInput = Required<z.infer<typeof CreateBookingSchema>>;
 
 /** Type of a booking object on the server. */
-export interface Booking extends z.infer<typeof CreateBookingSchema> {
-  id: string;
-  departureId: string;
-  totalVehicleWeight: number;
-}
+export type Booking = Required<z.infer<typeof CreateBookingSchema>>;
+
