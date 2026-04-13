@@ -180,3 +180,10 @@ export interface BookingManifestResponse {
     offAt: RouteStop;
   }>;
 }
+
+export const BookingManifestInputSchema = z
+.object({
+  departureId: z.uuid(),
+  from: RouteStopSchema,
+  to: RouteStopSchema
+})

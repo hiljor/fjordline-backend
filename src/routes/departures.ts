@@ -6,9 +6,15 @@ import {
   Booking,
   Departure,
   DepartureResponse,
+  BookingManifestInputSchema,
+  RouteStop,
 } from "../types";
 import { v4 as uuidv4 } from "uuid";
-import { totalVehicleWeight, validateRouteOrder } from "../services/capacity";
+import {
+  getAffectedLegIndices,
+  totalVehicleWeight,
+  validateRouteOrder,
+} from "../services/capacity";
 import { tryReserveBooking, deleteBooking } from "../services/booking";
 
 const router = Router();
@@ -105,9 +111,62 @@ router.post("/:id/bookings", async (req, res) => {
     return res.status(409).json(bookingResult.message);
 });
 
+
+/** GET /:id/manifest */
 router.get("/:id/manifest", async (req, res) => {
-  const { id: departureId } = req.params;
-  
+  const { id } = req.params;
+
+  // Validation
+  const zodResult = BookingManifestInputSchema.safeParse(req.body);
+  if (!zodResult.success)
+    return res.status(400).json({ message: zodResult.error });
+
+  const departure = departures.find((d) => d.id === id);
+  if (!departure)
+    return res.status(404).json({ message: "Avgang ikke funnet" });
+
+  // Find bookings on this departure
+  let filteredBookings = bookings.filter((b) => b.departureId === id);
+
+  const from = zodResult.data.from;
+  const to = zodResult.data.to;
+
+  if (from && to) {
+    const routeResult = validateRouteOrder(departure, from, to)
+    if (!routeResult.isValid) return res.status(422).json(routeResult.error);
+
+    const targetIndices = getAffectedLegIndices(
+      departure,
+      from as RouteStop,
+      to as RouteStop,
+    );
+
+    filteredBookings = filteredBookings.filter((booking) => {
+      const bookingIndices = getAffectedLegIndices(
+        departure,
+        booking.from,
+        booking.to,
+      );
+      // Check for overlap
+      return bookingIndices.some((index) => targetIndices.includes(index));
+    });
+  }
+
+  // Return filtered list
+  return res.json({
+    departureId: id,
+    segment: from && to ? `${from} -> ${to}` : "Fullstendig passasjerliste",
+    totalPassengersInSegment: filteredBookings.reduce(
+      (sum, b) => sum + b.passengers.length,
+      0,
+    ),
+    passengerList: filteredBookings.map((b) => ({
+      bookingId: b.id,
+      passengers: b.passengers,
+      onAt: b.from,
+      offAt: b.to,
+    })),
+  });
 });
 
 /**
@@ -129,7 +188,6 @@ router.delete("/:id/bookings/:bookingId", async (req, res) => {
     return res.status(400).json({ error: "Ugyldig ID-format for booking" });
   }
 
-
   // Find departure
   const departure = departures.find((d) => d.id === departureId);
   if (!departure) {
@@ -148,7 +206,7 @@ router.delete("/:id/bookings/:bookingId", async (req, res) => {
 
   const booking = bookings[bookingIndex];
 
-  // wrap in try catch because it does data object editing 
+  // wrap in try catch because it does data object editing
   // which could cause internal error
   try {
     deleteBooking(departure, booking);

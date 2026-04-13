@@ -22,9 +22,12 @@ Gitt min nylige interesse i Next.js bruker jeg Node.js med Express og TypeScript
 
 - **Revurdering av modell:** Etter å ha skapt en datamodell hvor en booking bare har en kontakt og antall passasjerer booket, så jeg en mulig feiltolkning jeg hadde gjort. Siden booking manifest ber om en liste med passasjerer, antar jeg det da ønskes navn. På denne måten kan det bedre spores hvem som er om bord. Derfor lagrer jeg i det minste navn for hver passasjer, med mulighet for mer.
 
+- **Departures manifest:** Jeg velger å returnere manifestet med liste av passasjerer, kontaktinfo til bookingperson, samt hvor de skal av og på. Jeg legger også inn mulighet for å filtrere på hvor passasjerene går av og på, som samsvarer med "leg" logikk.
+
 ## Ideer
 
 - Legg til shipId i DepartureResponse, alternativt skipnavn så det kan hentes informasjon om fasiliteter om bord fra en datamodell for skip
 - Legge til .trim() i string typer for å forhindre enkle feil
 - Legg til sjekk innen Departure om leg[0].to matcher leg[1].from osv.
 - Sette opp egen bookingliste for hver departure så det er raskere å søke etter en booking gitt API-oppsettet
+- 
