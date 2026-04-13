@@ -4,14 +4,12 @@ import { departures, bookings } from "../data/seed";
 import {
   CreateBookingSchema,
   Booking,
-  VEHICLE_WEIGHTS,
   Departure,
   DepartureResponse,
-  RouteStop,
 } from "../types";
 import { v4 as uuidv4 } from "uuid";
 import { totalVehicleWeight, validateRouteOrder } from "../services/capacity";
-import { tryReserveBooking } from "../services/booking";
+import { tryReserveBooking, deleteBooking } from "../services/booking";
 
 const router = Router();
 
@@ -33,7 +31,7 @@ function mapToResponse(departure: Departure): DepartureResponse {
         leg.occupiedVehicleCapacity < departure.maxVehicleCapacity,
     })),
   };
-};
+}
 
 // --- Routes ---
 
@@ -64,12 +62,17 @@ router.get("/:id", (req: Request, res: Response) => {
   res.json(mapToResponse(departure));
 });
 
-
 /**
  * POST /departures/:id/bookings
  */
 router.post("/:id/bookings", async (req, res) => {
   const departureId = req.params.id;
+
+  const idValidation = z.uuid().safeParse(departureId);
+
+  if (!idValidation.success) {
+    return res.status(400).json({ error: "Ugyldig ID-format for departure" });
+  }
 
   // Find departure
   const departure = departures.find((d) => d.id === departureId);
@@ -78,28 +81,83 @@ router.post("/:id/bookings", async (req, res) => {
   // --- Validate input ---
   // Zod validation
   const zodResult = await CreateBookingSchema.safeParseAsync(req.body);
-  if (!zodResult.success) return res.status(400).json(z.treeifyError(zodResult.error));
+  if (!zodResult.success)
+    return res.status(422).json(z.treeifyError(zodResult.error));
   const input = zodResult.data;
 
   // Route validation
   const { from, to, passengers } = zodResult.data;
   const routeResult = validateRouteOrder(departure, from, to);
-  if (!routeResult.isValid) return res.status(400).json({message: routeResult.error})
+  if (!routeResult.isValid)
+    return res.status(422).json({ message: routeResult.error });
 
   // --- Create Booking ---
   const newBooking: Booking = {
     ...input,
     id: uuidv4(),
     departureId: departureId,
-    totalVehicleWeight: input.vehicles ? totalVehicleWeight(input.vehicles) : 0, 
+    totalVehicleWeight: input.vehicles ? totalVehicleWeight(input.vehicles) : 0,
   };
 
   // Check if the requested journey has space, return 409 Conflict if not
   const bookingResult = tryReserveBooking(departure, newBooking);
-  if (!bookingResult.success) return res.status(409).json(bookingResult.message)
+  if (!bookingResult.success)
+    return res.status(409).json(bookingResult.message);
 });
 
-router.delete("/:id/bookings/{booking}")
+router.get("/:id/manifest", async (req, res) => {
+  const { id: departureId } = req.params;
+  
+});
 
+/**
+ * DELETE /departures/:id/bookings/:bookingId
+ */
+router.delete("/:id/bookings/:bookingId", async (req, res) => {
+  const { id: departureId, bookingId } = req.params;
+
+  const departureIdValidation = z.uuid().safeParse(departureId);
+
+  // Validation
+  if (!departureIdValidation.success) {
+    return res.status(400).json({ error: "Ugyldig ID-format for departure" });
+  }
+
+  const bookingIdValidation = z.uuid().safeParse(bookingId);
+
+  if (!bookingIdValidation.success) {
+    return res.status(400).json({ error: "Ugyldig ID-format for booking" });
+  }
+
+
+  // Find departure
+  const departure = departures.find((d) => d.id === departureId);
+  if (!departure) {
+    return res.status(404).json({ message: "Avgang ikke funnet" });
+  }
+
+  // Find booking
+  const bookingIndex = bookings.findIndex(
+    (b) => b.id === bookingId && b.departureId === departureId,
+  );
+  if (bookingIndex === -1) {
+    return res
+      .status(404)
+      .json({ message: "Booking ikke funnet for denne avgangen" });
+  }
+
+  const booking = bookings[bookingIndex];
+
+  // wrap in try catch because it does data object editing 
+  // which could cause internal error
+  try {
+    deleteBooking(departure, booking);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Kunne ikke slette booking",
+      error: (error as Error).message,
+    });
+  }
+});
 
 export default router;
