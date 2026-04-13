@@ -148,8 +148,8 @@ export type CreateBookingInput = z.infer<typeof CreateBookingSchema>;
 
 /** Type of a booking object on the server. */
 export interface Booking extends CreateBookingInput {
-  id: string; // UUID generert ved lagring
-  departureId: string; // UUID til avgangen
-  totalVehicleWeight: number; // Beregnet vekt
+  id: string; 
+  departureId: string;
+  totalVehicleWeight: number; 
 }
 
