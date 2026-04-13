@@ -55,7 +55,10 @@ export const DepartureResponseSchema = DepartureSchema.omit({
     LegSchema.omit({
       occupiedPassengerCapacity: true,
       occupiedVehicleCapacity: true,
-    }).extend({ freeSeats: z.number(), hasVehicleCapacity: z.boolean() }),
+    }).extend({ 
+      freeSeats: z.number(), 
+      hasVehicleCapacity: z.boolean() 
+    }),
   ),
 });
 
@@ -74,7 +77,7 @@ export const VEHICLE_WEIGHTS: Record<VehicleType, number> = {
   bus: 4.0,
 };
 
-export const VechileSchema = z
+export const VehicleSchema = z
   .object({
     type: VehicleTypeSchema,
     regNumber: z.string().optional(),
@@ -125,40 +128,28 @@ export const ContactSchema = z
 
 //----------------
 // -- Booking --
-export const BookingSchema = z
-.object({
-  id: z.uuid(),
-  departureId: z.uuid(),
-  totalVehicleWeight: z.number().nonnegative("Total kjøretøyvekt kan ikke være negativ")
-})
 
-
-export const CreateBookingSchema = BookingSchema
-.extend({
-    contact: ContactSchema,
-    from: RouteStopSchema,
-    to: RouteStopSchema,
-
-    passengers: z
-      .number()
-      .int("Antall passasjerer må være et heltall")
-      .positive("Det må være minst 1 passasjer i en booking")
-      .max(20, "Maks 20 passasjerer per bestilling"),
-
-    vehicles: z.array(VechileSchema).optional(),
-  })
-  .refine((data) => data.from !== data.to, {
-    message: "Avreise og destinasjon kan ikke være samme sted",
-    path: ["to"],
-  });
-
-
+export const CreateBookingSchema = z.object({
+  contact: ContactSchema,
+  from: RouteStopSchema,
+  to: RouteStopSchema,
+  passengers: z.number().int().positive().max(20),
+  vehicles: z.array(VehicleSchema).optional(),
+}).refine((data) => data.from !== data.to, {
+  message: "Avreise og destinasjon kan ikke være samme sted",
+  path: ["to"],
+});
 
 /**
  * Type of input given when creating a booking.
  */
-export type CreateBookingInput = Required<z.infer<typeof CreateBookingSchema>>;
+export type CreateBookingInput = z.infer<typeof CreateBookingSchema>;
+
 
 /** Type of a booking object on the server. */
-export type Booking = Required<z.infer<typeof CreateBookingSchema>>;
+export interface Booking extends CreateBookingInput {
+  id: string; // UUID generert ved lagring
+  departureId: string; // UUID til avgangen
+  totalVehicleWeight: number; // Beregnet vekt
+}
 
