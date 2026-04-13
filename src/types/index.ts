@@ -14,23 +14,28 @@ export const RouteStopSchema = z.enum([
  */
 export type RouteStop = z.infer<typeof RouteStopSchema>;
 
-export const LegSchema = z.object({
-  from: RouteStopSchema,
-  to: RouteStopSchema,
-  departureTime: z.iso.datetime({
-    message: "Ugyldig datoformat (ISO 8601 kreves)",
-  }),
-  arrivalTime: z.iso.datetime({
-    message: "Ugyldig datoformat (ISO 8601 kreves)",
-  }),
-  occupiedPassengerCapacity: z.number().nonnegative(),
-  occupiedVehicleCapacity: z.number().nonnegative(),
-}).refine((data) => {
-  return new Date(data.arrivalTime) > new Date(data.departureTime);
-}, {
-  message: "Ankomsttid må være etter avreisetid",
-  path: ["arrivalTime"]
-});
+export const LegSchema = z
+  .object({
+    from: RouteStopSchema,
+    to: RouteStopSchema,
+    departureTime: z.iso.datetime({
+      message: "Ugyldig datoformat (ISO 8601 kreves)",
+    }),
+    arrivalTime: z.iso.datetime({
+      message: "Ugyldig datoformat (ISO 8601 kreves)",
+    }),
+    occupiedPassengerCapacity: z.number().nonnegative(),
+    occupiedVehicleCapacity: z.number().nonnegative(),
+  })
+  .refine(
+    (data) => {
+      return new Date(data.arrivalTime) > new Date(data.departureTime);
+    },
+    {
+      message: "Ankomsttid må være etter avreisetid",
+      path: ["arrivalTime"],
+    },
+  );
 
 /**
  * Type of a leg along a journey.
@@ -55,9 +60,9 @@ export const DepartureResponseSchema = DepartureSchema.omit({
     LegSchema.omit({
       occupiedPassengerCapacity: true,
       occupiedVehicleCapacity: true,
-    }).extend({ 
-      freeSeats: z.number(), 
-      hasVehicleCapacity: z.boolean() 
+    }).extend({
+      freeSeats: z.number(),
+      hasVehicleCapacity: z.boolean(),
     }),
   ),
 });
@@ -107,57 +112,71 @@ export const VehicleSchema = z
 
 export type Vehicle = z.infer<typeof VehicleSchema>;
 
-//----------------  
+//----------------
 // -- Contact --
-export const NameSchema = z
-.object({
+export const NameSchema = z.object({
   firstAndMiddle: z.string().min(1),
-  last: z.string().min(1)
-})
+  last: z.string().min(1),
+});
 
-export const PhoneSchema = z
-.object({
+export const PhoneSchema = z.object({
   countryCode: z.string().min(1),
-  number: z.e164()
-})
+  number: z.e164(),
+});
 
-export const ContactSchema = z
-.object({
+export const ContactSchema = z.object({
   name: NameSchema,
   email: z.email("Ugyldig epostadresse"),
-  phone: PhoneSchema.optional()
-})
+  phone: PhoneSchema.optional(),
+});
 
-export const PassengerSchema = z
-.object({
-  name: NameSchema
-})
+export type ContactInfo = z.infer<typeof ContactSchema>;
 
+export const PassengerSchema = z.object({
+  name: NameSchema,
+});
+
+export type Passenger = z.infer<typeof PassengerSchema>;
 
 //----------------
 // -- Booking --
 
-export const CreateBookingSchema = z.object({
-  contact: ContactSchema,
-  from: RouteStopSchema,
-  to: RouteStopSchema,
-  passengers: z.array(PassengerSchema).nonempty("At least one passenger must be given"),
-  vehicles: z.array(VehicleSchema).optional(),
-}).refine((data) => data.from !== data.to, {
-  message: "Avreise og destinasjon kan ikke være samme sted",
-  path: ["to"],
-});
+export const CreateBookingSchema = z
+  .object({
+    contact: ContactSchema,
+    from: RouteStopSchema,
+    to: RouteStopSchema,
+    passengers: z
+      .array(PassengerSchema)
+      .nonempty("At least one passenger must be given"),
+    vehicles: z.array(VehicleSchema).optional(),
+  })
+  .refine((data) => data.from !== data.to, {
+    message: "Avreise og destinasjon kan ikke være samme sted",
+    path: ["to"],
+  });
 
 /**
  * Type of input given when creating a booking.
  */
 export type CreateBookingInput = z.infer<typeof CreateBookingSchema>;
 
-
 /** Type of a booking object on the server. */
 export interface Booking extends CreateBookingInput {
-  id: string; 
+  id: string;
   departureId: string;
-  totalVehicleWeight: number; 
+  totalVehicleWeight: number;
 }
 
+/** Type of response given when manifest is asked for a departure */
+export interface BookingManifestResponse {
+  departureId: string;
+  totalPassengersBooked: number;
+  bookings: Array<{
+    bookingId: string;
+    contact: ContactInfo;
+    passengers: Passenger[];
+    onAt: RouteStop;
+    offAt: RouteStop;
+  }>;
+}
