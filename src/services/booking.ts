@@ -63,6 +63,10 @@ export function deleteBooking(
 ) {
   const bookingIndex = bookings.findIndex((b) => b.id === booking.id);
 
+  if (bookingIndex === -1) {
+    throw Error(`Booking ID ${booking.id} does not exist in database, and should have been confirmed before calling this function`)
+  }
+
   // Find legs to update
   const affectedIndices = getAffectedLegIndices(
     departure,
