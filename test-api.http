@@ -4,23 +4,29 @@
 @baseUrl = http://{{hostname}}:{{port}}
 # Replace these with actual UUIDs from your seed.ts or terminal logs
 @departureId = 236a3ec4-1aae-4aee-801f-f0f14a0bbfe5
+@fakeDepartureId = 236a3ec4-1aae-4aee-801f-f0f14a0bbfe6
 @bookingId = fb587635-4929-4e78-9993-49635f29d2f2
+
+#############################################
 
 ### 1. Get all departures
 # Returns DepartureResponse list with freeSeats and vehicle capacity
 GET {{baseUrl}}/departures
 Accept: application/json
 
-###
+#############################################
 
-### 2. Get a specific departure
+### 2a. Get a specific departure
 # Validates UUID format before searching
 GET {{baseUrl}}/departures/{{departureId}}
 Accept: application/json
+### 2b. get a nonexistent departure
+GET {{baseUrl}}/departures/{{fakeDepartureId}}
 
-###
 
-### 3. Create a new booking
+#############################################
+
+### 3a. Create a new booking
 # This checks:
 # - Zod schema validation
 # - Route order (Bergen -> Stavanger)
@@ -43,15 +49,34 @@ Content-Type: application/json
      "regNumber": "XX25574" }
   ]
 }
+### 3b. Incorrect route sequence
+POST {{baseUrl}}/departures/{{departureId}}/bookings
+Content-Type: application/json
 
-###
+{
+  "from": "Stavanger",
+  "to": "Bergen",
+  "contact": {
+    "name": { "firstAndMiddle": "Test", "last": "User" },
+    "email": "test@example.com"
+  },
+  "passengers": [
+    { "name": { "firstAndMiddle": "John", "last": "Doe" } }
+  ],
+  "vehicles": [
+    { "type": "car",
+     "regNumber": "XX25574" }
+  ]
+}
+
+#############################################
 
 ### 4. Get Manifest (Passenger List)
 # Filters bookings overlapping the specific segment
 GET {{baseUrl}}/departures/{{departureId}}/manifest?from=Bergen&to=Stavanger
 Accept: application/json
 
-###
+#############################################
 
 ### 5. Delete a booking
 # Triggers capacity restoration and removal from database
