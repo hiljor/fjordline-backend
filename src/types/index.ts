@@ -14,20 +14,21 @@ export const RouteStopSchema = z.enum([
  */
 export type RouteStop = z.infer<typeof RouteStopSchema>;
 
-export const LegSchema = z
-  .object({
-    from: RouteStopSchema,
-    to: RouteStopSchema,
-    departureTime: z.iso.datetime({
-      message: "Ugyldig datoformat (ISO 8601 kreves)",
-    }),
-    arrivalTime: z.iso.datetime({
-      message: "Ugyldig datoformat (ISO 8601 kreves)",
-    }),
-    occupiedPassengerCapacity: z.number().nonnegative(),
-    occupiedVehicleCapacity: z.number().nonnegative(),
-  })
-  .refine(
+// Definerer objekt-strukturen separat for å tillate .omit() senere
+const LegBaseSchema = z.object({
+  from: RouteStopSchema,
+  to: RouteStopSchema,
+  departureTime: z.iso.datetime({
+    message: "Ugyldig datoformat (ISO 8601 kreves)",
+  }),
+  arrivalTime: z.iso.datetime({
+    message: "Ugyldig datoformat (ISO 8601 kreves)",
+  }),
+  occupiedPassengerCapacity: z.number().nonnegative(),
+  occupiedVehicleCapacity: z.number().nonnegative(),
+});
+
+export const LegSchema = LegBaseSchema.refine(
     (data) => {
       return new Date(data.arrivalTime) > new Date(data.departureTime);
     },
@@ -56,8 +57,8 @@ export const DepartureResponseSchema = DepartureSchema.omit({
   maxVehicleCapacity: true,
 }).extend({
   legs: z.array(
-    // Hide details from client and replace by UI centered data
-    LegSchema.omit({
+    // Vi bruker LegBaseSchema her i stedet for LegSchema for å unngå refine-error
+    LegBaseSchema.omit({
       occupiedPassengerCapacity: true,
       occupiedVehicleCapacity: true,
     }).extend({
@@ -97,9 +98,7 @@ export const VehicleSchema = z
     }
 
     if (data.regNumber) {
-      // Check the license plate for information if needed
       const isValid = true;
-      // example logic
       if (!isValid) {
         ctx.addIssue({
           code: "custom",
