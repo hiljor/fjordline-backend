@@ -137,8 +137,8 @@ router.get("/:id/manifest", async (req, res) => {
 
     const targetIndices = getAffectedLegIndices(
       departure,
-      from as RouteStop,
-      to as RouteStop,
+      from,
+      to,
     );
 
     filteredBookings = filteredBookings.filter((booking) => {
