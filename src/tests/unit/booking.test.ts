@@ -90,7 +90,7 @@ describe("Booking Service Unit Tests", () => {
   describe("deleteBooking", () => {
     it("should decrement leg occupancy and remove booking from the array", () => {
       const departure = createMockDeparture();
-      const bookingId = "fb587635-4929-4e78-9993-49635f29d2f2";
+      const bookingId = "c8814209-926d-434d-bd86-a048d740b6de";
       const booking: any = {
         id: bookingId,
         from: "Bergen",
@@ -104,10 +104,13 @@ describe("Booking Service Unit Tests", () => {
       departure.legs[0].occupiedPassengerCapacity = 1;
       departure.legs[0].occupiedVehicleCapacity = 1.0;
 
+      const priorBookingLength = bookings.length;
+      const priorOccupiedPassengerCapacity = departure.legs[0].occupiedPassengerCapacity;
+
       deleteBooking(departure, booking);
 
-      expect(bookings.length).toBe(0);
-      expect(departure.legs[0].occupiedPassengerCapacity).toBe(0);
+      expect(bookings.length).toBe(priorBookingLength - 1);
+      expect(departure.legs[0].occupiedPassengerCapacity).toBe(priorOccupiedPassengerCapacity - 1);
     });
 
     it("should throw an error if the booking does not exist in the database", () => {

@@ -1,10 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
-import { departures, resetData, bookings } from "../../data/seed";
+import { departures, resetData, bookings, BOOKING_ID_1 } from "../../data/seed";
 
 describe("Departures API Integration", () => {
-  
   beforeEach(() => {
     resetData();
   });
@@ -15,14 +14,16 @@ describe("Departures API Integration", () => {
 
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
-      
+
       // Verify that the response uses the DepartureResponseSchema (includes freeSeats)
       const firstDeparture = response.body[0];
       expect(firstDeparture.legs[0]).toHaveProperty("freeSeats");
       expect(firstDeparture.legs[0]).toHaveProperty("hasVehicleCapacity");
-      
+
       // Ensure internal fields are omitted
-      expect(firstDeparture.legs[0]).not.toHaveProperty("occupiedPassengerCapacity");
+      expect(firstDeparture.legs[0]).not.toHaveProperty(
+        "occupiedPassengerCapacity",
+      );
     });
   });
 
@@ -39,14 +40,17 @@ describe("Departures API Integration", () => {
 
     it("should create a booking successfully and return 201", async () => {
       const depId = departures[0].id;
+      const priorBookingsLength = bookings.length;
 
       const response = await request(app)
         .post(`/departures/${depId}/bookings`)
         .send(validBookingPayload);
 
+
+
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty("id");
-      expect(bookings.length).toBe(1);
+      expect(bookings.length).toBe(priorBookingsLength + 1);
     });
 
     it("should return 422 if the route order is invalid (e.g., traveling backwards)", async () => {
@@ -67,9 +71,10 @@ describe("Departures API Integration", () => {
 
     it("should return 409 Conflict if there is no available capacity", async () => {
       const depId = departures[0].id;
-      
+
       // Manually fill up the first leg
-      departures[0].legs[0].occupiedPassengerCapacity = departures[0].maxPassengerCapacity;
+      departures[0].legs[0].occupiedPassengerCapacity =
+        departures[0].maxPassengerCapacity;
 
       const response = await request(app)
         .post(`/departures/${depId}/bookings`)
@@ -83,15 +88,20 @@ describe("Departures API Integration", () => {
     it("should filter the passenger list based on route segments (query params)", async () => {
       const depId = departures[0].id;
 
+      const priorBookingsLength = bookings.length;
+
       // Manually add a booking to the seed data
       bookings.push({
         id: "test-booking-id",
         departureId: depId,
         from: "Bergen",
         to: "Stavanger",
-        contact: { name: { firstAndMiddle: "Jane", last: "Doe" }, email: "jane@doe.com" },
+        contact: {
+          name: { firstAndMiddle: "Jane", last: "Doe" },
+          email: "jane@doe.com",
+        },
         passengers: [{ name: { firstAndMiddle: "Jane", last: "Doe" } }],
-        totalVehicleWeight: 0
+        totalVehicleWeight: 0,
       });
 
       // Query manifest for the segment where the passenger is present
@@ -100,53 +110,45 @@ describe("Departures API Integration", () => {
         .query({ from: "Bergen", to: "Stavanger" });
 
       expect(res.status).toBe(200);
-      expect(res.body.passengerList.length).toBe(1);
+      expect(res.body.passengerList.length).toBe(priorBookingsLength + 1);
 
       // Query manifest for a different segment (Stavanger to Hirtshals)
       const emptyRes = await request(app)
         .get(`/departures/${depId}/manifest`)
         .query({ from: "Stavanger", to: "Hirtshals" });
 
-      expect(emptyRes.body.passengerList.length).toBe(0);
+      expect(emptyRes.body.passengerList.length).toBe(priorBookingsLength);
     });
   });
 
   describe("DELETE /departures/:id/bookings/:bookingId", () => {
     it("should delete an existing booking and free up capacity", async () => {
-    const depId = departures[0].id; 
-    const bId = "550e8400-e29b-41d4-a716-446655440000"; 
-    
-    // Manually push a booking with the same valid UUID into the seed array
-    bookings.push({
-      id: bId,
-      departureId: depId,
-      from: "Bergen",
-      to: "Stavanger",
-      contact: { 
-        name: { firstAndMiddle: "Slett", last: "Meg" }, 
-        email: "s@m.no" 
-      },
-      passengers: [{ name: { firstAndMiddle: "Slett", last: "Meg" } }],
-      totalVehicleWeight: 0
+      const depId = departures[0].id;
+      const bId = BOOKING_ID_1;
+      const priorBookingsLength = bookings.length;
+
+      // Perform the deletion
+      const res = await request(app).delete(
+        `/departures/${depId}/bookings/${bId}`,
+      );
+
+      expect(res.status).toBe(200);
+
+      // Check length (basic sanity check)
+      expect(bookings.length).toBe(priorBookingsLength - 1);
+
+      // Explicit ID check
+      const exists = bookings.some((b) => b.id === bId);
+      expect(exists).toBe(false);
     });
-
-    const res = await request(app)
-      .delete(`/departures/${depId}/bookings/${bId}`);
-
-    if (res.status === 400) {
-      console.log("Validation error body:", res.body);
-    }
-
-    expect(res.status).toBe(200); // Now matches the route's status
-    expect(bookings.length).toBe(0);
-  });
 
     it("should return 404 if the booking does not exist", async () => {
       const depId = departures[0].id;
       const nonExistentId = "00000000-0000-0000-0000-000000000000";
 
-      const response = await request(app)
-        .delete(`/departures/${depId}/bookings/${nonExistentId}`);
+      const response = await request(app).delete(
+        `/departures/${depId}/bookings/${nonExistentId}`,
+      );
 
       expect(response.status).toBe(404);
     });

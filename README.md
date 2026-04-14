@@ -33,3 +33,4 @@ Gitt min nylige interesse i Next.js bruker jeg Node.js med Express og TypeScript
 - Legg til sjekk innen Departure om leg[0].to matcher leg[1].from osv.
 - Sette opp egen bookingliste for hver departure så det er raskere å søke etter manifestet.
 - Ta hensyn til tidssoner
+- La /departures bare returnere overfarter med tilgjengelig plass (dette var ikke helt klart for meg som krav eller ikke)
