@@ -32,7 +32,7 @@ export function tryReserveBooking(
 
   // 2. Check vehicle capacity
   const hasVehicleSpace = affectedLegs.every(
-    (leg) => leg.occupiedVehicleCapacity <= departure.maxVehicleCapacity,
+    (leg) => leg.occupiedVehicleCapacity + booking.totalVehicleWeight <= departure.maxVehicleCapacity,
   );
 
   if (!hasVehicleSpace) {
