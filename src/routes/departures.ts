@@ -109,6 +109,9 @@ router.post("/:id/bookings", async (req, res) => {
   const bookingResult = tryReserveBooking(departure, newBooking);
   if (!bookingResult.success)
     return res.status(409).json(bookingResult.message);
+
+  bookings.push(newBooking);
+  return res.status(201).json(newBooking);
 });
 
 
