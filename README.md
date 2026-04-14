@@ -25,7 +25,7 @@ Jeg antar ruten ['Bergen', 'Stavanger', 'Hirtshals', 'Kristiansand'] også går 
 
 - **Unit testing:** Jest har lenge vert standard, men Vitest+Supertest er mer fremtidsrettet, spesielt for et TypeScript prosjekt. Jeg lager en testfil for departures.ts for å teste APIen, og egne unit tester for hver service fil. Jeg tester alle endpointene.
 
-- **Logging:** Jeg spurte Gemini hva den anbefalte for prosjektet og foreslo Winston eller pino. Jeg søkte litt rundt og fant at pino virker best for denne applikasjonen, gitt at den er lettere og har higher performance. Vi har ikke stor og kompleks nok logikk til å ha behov for Winston, slik det kan være i legacy systemer.
+- **Logging:** Jeg spurte Gemini hva den anbefalte for prosjektet og foreslo Winston eller pino. Jeg søkte litt rundt og fant at pino virker best for denne applikasjonen, gitt at den er lettere og har higher performance. Vi har ikke stor og kompleks nok logikk til å ha behov for Winston, slik det kan være i legacy systemer. Jeg logger til terminal output og ikke til fil fordi i enviroments som docker plukker den det opp for deg.
 
 ## Ideer
 - Legg til shipId i DepartureResponse, alternativt skipnavn så det kan hentes informasjon om fasiliteter om bord fra en datamodell for skip
