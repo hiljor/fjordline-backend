@@ -48,13 +48,8 @@ Content-Type: application/json
 
 ### 4. Get Manifest (Passenger List)
 # Filters bookings overlapping the specific segment
-GET {{baseUrl}}/departures/{{departureId}}/manifest
-Content-Type: application/json
-
-{
-  "from": "Bergen",
-  "to": "Stavanger"
-}
+GET {{baseUrl}}/departures/{{departureId}}/manifest?from=Bergen&to=Stavanger
+Accept: application/json
 
 ###
 

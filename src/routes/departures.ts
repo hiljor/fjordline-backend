@@ -125,7 +125,7 @@ router.get("/:id/manifest", async (req, res) => {
     departureId: id
   });
   if (!zodResult.success)
-    return res.status(400).json({ message: zodResult.error });
+    return res.status(400).json({ message: z.treeifyError(zodResult.error) });
 
   const departure = departures.find((d) => d.id === id);
   if (!departure)
