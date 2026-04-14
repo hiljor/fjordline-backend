@@ -15,7 +15,7 @@ import {
   totalVehicleWeight,
   validateRouteOrder,
 } from "../services/capacity";
-import { tryReserveBooking, deleteBooking } from "../services/booking";
+import { tryReserveBooking, deleteBooking, getBookingsByRoute } from "../services/booking";
 
 const router = Router();
 
@@ -120,7 +120,10 @@ router.get("/:id/manifest", async (req, res) => {
   const { id } = req.params;
 
   // Validation
-  const zodResult = BookingManifestInputSchema.safeParse(req.body);
+  const zodResult = BookingManifestInputSchema.safeParse({
+    ...req.query,
+    departureId: id
+  });
   if (!zodResult.success)
     return res.status(400).json({ message: zodResult.error });
 
@@ -131,28 +134,14 @@ router.get("/:id/manifest", async (req, res) => {
   // Find bookings on this departure
   let filteredBookings = bookings.filter((b) => b.departureId === id);
 
-  const from = zodResult.data.from;
-  const to = zodResult.data.to;
+  const { from, to } = zodResult.data;
 
+  // filter by from and to if given
   if (from && to) {
     const routeResult = validateRouteOrder(departure, from, to)
     if (!routeResult.isValid) return res.status(422).json(routeResult.error);
 
-    const targetIndices = getAffectedLegIndices(
-      departure,
-      from,
-      to,
-    );
-
-    filteredBookings = filteredBookings.filter((booking) => {
-      const bookingIndices = getAffectedLegIndices(
-        departure,
-        booking.from,
-        booking.to,
-      );
-      // Check for overlap
-      return bookingIndices.some((index) => targetIndices.includes(index));
-    });
+    filteredBookings = getBookingsByRoute(bookings, departure, from, to);
   }
 
   // Return filtered list

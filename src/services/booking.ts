@@ -1,6 +1,6 @@
 import { bookings } from "../data/seed";
-import { Booking, Departure } from "../types";
-import { getAffectedLegIndices } from "./capacity";
+import { Booking, Departure, RouteStop } from "../types";
+import { getAffectedLegIndices, validateRouteOrder } from "./capacity";
 
 /**
  * Check for space and reserve booking if there is space
@@ -79,4 +79,33 @@ export function deleteBooking(
   // Delete booking from database
   bookings.splice(bookingIndex, 1);
 
+}
+
+/**
+ * Gets bookings on a specified departure given a route on that departure.
+ * Assumes from and to are valid parameters.
+ * @param bookings 
+ * @param departure 
+ * @param from 
+ * @param to 
+ */
+export function getBookingsByRoute(bookings: Booking[], departure: Departure, from: RouteStop, to: RouteStop): Booking[] {
+
+  const targetIndices = getAffectedLegIndices(
+    departure,
+    from,
+    to,
+  );
+
+  bookings = bookings.filter((booking) => {
+    const bookingIndices = getAffectedLegIndices(
+      departure,
+      booking.from,
+      booking.to,
+    );
+    // Check for overlap
+    return bookingIndices.some((index) => targetIndices.includes(index));
+  });
+
+  return bookings
 }
