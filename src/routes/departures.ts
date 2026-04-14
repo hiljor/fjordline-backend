@@ -171,19 +171,19 @@ router.delete("/:id/bookings/:bookingId", async (req, res) => {
 
   // Validation
   if (!departureIdValidation.success) {
-    return res.status(400).json({ error: "Ugyldig ID-format for departure" });
+    return res.status(400).json({ error: "Incorrect ID format for departure" });
   }
 
   const bookingIdValidation = z.uuid().safeParse(bookingId);
 
   if (!bookingIdValidation.success) {
-    return res.status(400).json({ error: "Ugyldig ID-format for booking" });
+    return res.status(400).json({ error: "Incorrect ID format for booking" });
   }
 
   // Find departure
   const departure = departures.find((d) => d.id === departureId);
   if (!departure) {
-    return res.status(404).json({ message: "Avgang ikke funnet" });
+    return res.status(404).json({ message: "Departure doesnt exist" });
   }
 
   // Find booking
@@ -193,7 +193,7 @@ router.delete("/:id/bookings/:bookingId", async (req, res) => {
   if (bookingIndex === -1) {
     return res
       .status(404)
-      .json({ message: "Booking ikke funnet for denne avgangen" });
+      .json({ message: "Booking doesn't exist on this departure" });
   }
 
   const booking = bookings[bookingIndex];
@@ -204,10 +204,12 @@ router.delete("/:id/bookings/:bookingId", async (req, res) => {
     deleteBooking(departure, booking);
   } catch (error) {
     return res.status(500).json({
-      message: "Kunne ikke slette booking",
+      message: "Could not delete booking",
       error: (error as Error).message,
     });
   }
+
+  return res.status(200).json({message: "Booking deleted" });
 });
 
 export default router;
