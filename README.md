@@ -24,10 +24,11 @@ Gitt min nylige interesse i Next.js bruker jeg Node.js med Express og TypeScript
 
 - **Departures manifest:** Jeg velger å returnere manifestet med liste av passasjerer, kontaktinfo til bookingperson, samt hvor de skal av og på. Jeg legger også inn mulighet for å filtrere på hvor passasjerene går av og på, som samsvarer med "leg" logikk.
 
-- **Unit testing:** Jest har lenge vert standard, men Vitest+Supertest er mer fremtidsrettet, spesielt for et TypeScript prosjekt. Jeg lager en testfil for departures.ts for å teste APIen, og egne unit tester for hver service fil.
+- **Unit testing:** Jest har lenge vert standard, men Vitest+Supertest er mer fremtidsrettet, spesielt for et TypeScript prosjekt. Jeg lager en testfil for departures.ts for å teste APIen, og egne unit tester for hver service fil. Jeg tester alle endpointene.
+
+- **Logging:** Jeg spurte Gemini hva den anbefalte for prosjektet og foreslo Winston eller pino. Jeg søkte litt rundt og fant at pino virker best for denne applikasjonen, gitt at den er lettere og har higher performance. Vi har ikke stor og kompleks nok logikk til å ha behov for Winston.
 
 ## Ideer
-
 - Legg til shipId i DepartureResponse, alternativt skipnavn så det kan hentes informasjon om fasiliteter om bord fra en datamodell for skip
 - Legge til .trim() i string typer for å forhindre enkle feil
 - Legg til sjekk innen Departure om leg[0].to matcher leg[1].from osv.
