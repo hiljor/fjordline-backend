@@ -1,0 +1,63 @@
+### Variables
+@hostname = localhost
+@port = 3000
+@baseUrl = http://{{hostname}}:{{port}}
+# Replace these with actual UUIDs from your seed.ts or terminal logs
+@departureId = 236a3ec4-1aae-4aee-801f-f0f14a0bbfe5
+@bookingId = fb587635-4929-4e78-9993-49635f29d2f2
+
+### 1. Get all departures
+# Returns DepartureResponse list with freeSeats and vehicle capacity
+GET {{baseUrl}}/departures
+Accept: application/json
+
+###
+
+### 2. Get a specific departure
+# Validates UUID format before searching
+GET {{baseUrl}}/departures/{{departureId}}
+Accept: application/json
+
+###
+
+### 3. Create a new booking
+# This checks:
+# - Zod schema validation
+# - Route order (Bergen -> Stavanger)
+# - Capacity availability
+POST {{baseUrl}}/departures/{{departureId}}/bookings
+Content-Type: application/json
+
+{
+  "from": "Bergen",
+  "to": "Stavanger",
+  "contact": {
+    "name": { "firstAndMiddle": "Test", "last": "User" },
+    "email": "test@example.com"
+  },
+  "passengers": [
+    { "name": { "firstAndMiddle": "John", "last": "Doe" } }
+  ],
+  "vehicles": [
+    { "type": "car",
+     "regNumber": "XX25574" }
+  ]
+}
+
+###
+
+### 4. Get Manifest (Passenger List)
+# Filters bookings overlapping the specific segment
+GET {{baseUrl}}/departures/{{departureId}}/manifest
+Content-Type: application/json
+
+{
+  "from": "Bergen",
+  "to": "Stavanger"
+}
+
+###
+
+### 5. Delete a booking
+# Triggers capacity restoration and removal from database
+DELETE {{baseUrl}}/departures/{{departureId}}/bookings/{{bookingId}}
