@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Departure, Booking } from '../types';
 
-export let departures: Departure[] = [
+const initialDepartures: Departure[] = [
   {
     id: uuidv4(),
     maxPassengerCapacity: 1500,
@@ -36,3 +36,12 @@ export let departures: Departure[] = [
 ];
 
 export let bookings: Booking[] = [];
+
+export let departures: Departure[] = JSON.parse(JSON.stringify(initialDepartures));
+
+/**
+ * Empties the collected Bookings data
+ */
+export const resetData = () => {
+  bookings.length = 0; 
+};
