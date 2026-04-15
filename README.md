@@ -35,6 +35,13 @@ Jeg antar ruten ['Bergen', 'Stavanger', 'Hirtshals', 'Kristiansand'] også går 
   - docker-compose.yml
     - Begrenser minne for memory leak proofing
 
+- **Kubernetes-manifests:**
+  - Deployment.yaml
+    - 2 replicas for god uptime og reliability
+    - readiness/liveness probe:
+      - Enkel /health api som returnerer noen få hjelpsomme detaljer, plassert for å unngå middleware logic
+      - I ekte miljø: burde sjekke database connection og memory usage
+
 ## Ideer
 - Legg til shipId i DepartureResponse, alternativt skipnavn så det kan hentes informasjon om fasiliteter om bord fra en datamodell for skip
 - Legge til .trim() i string typer for å forhindre enkle feil
