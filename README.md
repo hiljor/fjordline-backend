@@ -44,7 +44,7 @@ Jeg antar ruten ['Bergen', 'Stavanger', 'Hirtshals', 'Kristiansand'] også går 
   - Service.yaml
     - Definerte "type: LoadBalancer" siden det er bedt om API endpoints hvor vi sender data som en POST f.eks, og tilsier en public facing API server. Om jeg bestemte arkitekturen hadde jeg vurdert å bruke f.eks. React server actions til å gjøre kommunikasjon med backend rent server-to-server av sikkerhetshensyn, altså bruke "type: ClusterIP".
 
--**Vurdering av datamodell:** Slik modellen er nå er det ikke veldig effektivt å søke etter en booking fordi man søker gjennom listen for alle departures selv om man får gitt en departureId. Hvis dataene var lagret etter departureId kunne det passet bedre akkurat denne use-case. Men modellen er mer skalerbar som den er, fordi man f.eks. i MongoDB har en maks dokumentstørrelse. Slik det er, er den også best rettet mot mange bookingforespørsler om gangen, fordi det bare skrives nye objekter, og ett og samme objekt blir ikke skrivelåst av en ny booking som lagres.
+- **Vurdering av datamodell:** Slik modellen er nå er det ikke veldig effektivt å søke etter en booking fordi man søker gjennom listen for alle departures selv om man får gitt en departureId. Hvis dataene var lagret etter departureId kunne det passet bedre akkurat denne use-case. Men modellen er mer skalerbar som den er, fordi man f.eks. i MongoDB har en maks dokumentstørrelse. Slik det er, er den også best rettet mot mange bookingforespørsler om gangen, fordi det bare skrives nye objekter, og ett og samme objekt blir ikke skrivelåst av en ny booking som lagres.
 
 ## Ideer
 - Legg til shipId i DepartureResponse, alternativt skipnavn så det kan hentes informasjon om fasiliteter om bord fra en datamodell for skip
