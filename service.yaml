@@ -8,5 +8,5 @@ spec:
   ports:
     - protocol: TCP
       port: 80         # The port the service listens on
-      targetPort: 3000 # The port your Express app listens on
-  type: LoadBalancer   # Makes the service accessible from outside the cluster
+      targetPort: 3000 # The port the Express app listens on
+  type: LoadBalancer   # Creates a public IP for access

@@ -41,6 +41,8 @@ Jeg antar ruten ['Bergen', 'Stavanger', 'Hirtshals', 'Kristiansand'] også går 
     - readiness/liveness probe:
       - Enkel /health api som returnerer noen få hjelpsomme detaljer, plassert for å unngå middleware logic
       - I ekte miljø: burde sjekke database connection og memory usage
+  - Service.yaml
+    - Definerte "type: LoadBalancer" siden det er bedt om API endpoints hvor vi sender data som en POST f.eks, og tilsier en public facing API server. Om jeg bestemte arkitekturen hadde jeg vurdert å bruke f.eks. React server actions til å gjøre kommunikasjon med backend rent server-to-server av sikkerhetshensyn.
 
 ## Ideer
 - Legg til shipId i DepartureResponse, alternativt skipnavn så det kan hentes informasjon om fasiliteter om bord fra en datamodell for skip
