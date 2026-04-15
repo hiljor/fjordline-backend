@@ -6,8 +6,6 @@ const app = express();
 app.use(express.json());
 app.use(loggerMiddleware)
 
-app.use('/departures', departureRoutes);
-
 // Simple health check, added here to avoid middleware checks
 app.get('/health', (req, res) => {
   res.status(200).json({ 
@@ -15,5 +13,9 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString() 
   });
 });
+
+app.use('/departures', departureRoutes);
+
+
 
 export default app;
