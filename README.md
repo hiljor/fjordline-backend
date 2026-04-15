@@ -1,6 +1,10 @@
 # fjordline-backend
 Backend-app for jobbsøknad ved Fjord Line AS.
 
+For å kjøre prosjektet kan du enten:
+1. kjøre pnpm dev
+2. (med docker-desktop installer) kjøre docker-compose up --build
+
 ## Antagelser
 Jeg antar ruten ['Bergen', 'Stavanger', 'Hirtshals', 'Kristiansand'] også går baklengs, og ikke i sirkel for å service reiser fra Kristiansand til Bergen for eksempel.
 
