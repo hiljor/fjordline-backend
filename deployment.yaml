@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fjordline-booking-api
+  labels:
+    app: fjordline-booking
+spec:
+  replicas: 2 # Run 2 copies for good availability
+  selector:
+    matchLabels:
+      app: fjordline-booking
+  template:
+    metadata:
+      labels:
+        app: fjordline-booking
+    spec:
+      containers:
+      - name: api
+        image: ferry-booking-api:latest # Just for local presentation
+        ports:
+        - containerPort: 3000
+        
+        # Resource management (similar to docker-compose)
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 20
