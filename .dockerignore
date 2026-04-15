@@ -1,0 +1,38 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build output
+dist
+
+# Environment and Secrets
+.env
+.env.local
+.env.*.local
+
+# Version Control
+.git
+.gitignore
+
+# Tests and Coverage
+tests/
+coverage/
+.vitest.result
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker files
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+README.md

@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  fjordline-booking-api:
+    # Build the image using the Dockerfile in the current directory
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    # Give the running container a recognizable name
+    container_name: fjordline-booking-api-prod
+    
+    # Map dev port 3000 to the container's port 3000
+    ports:
+      - "3000:3000"
+    
+    environment:
+      - NODE_ENV=production
+    
+    # Restart the container if it crashes or if the computer reboots
+    restart: always
+
+    # Limit in case of memory leak
+    deploy:
+      resources:
+        limits:
+          memory: 512M

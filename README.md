@@ -23,9 +23,17 @@ Jeg antar ruten ['Bergen', 'Stavanger', 'Hirtshals', 'Kristiansand'] også går 
 
 - **Departures manifest:** Jeg velger å returnere manifestet med liste av passasjerer, kontaktinfo til bookingperson, samt hvor de skal av og på. Jeg legger også inn mulighet for å filtrere på hvor passasjerene går av og på, som samsvarer med "leg" logikk.
 
-- **Unit testing:** Jest har lenge vert standard, men Vitest+Supertest er mer fremtidsrettet, spesielt for et TypeScript prosjekt. Jeg lager en testfil for departures.ts for å teste APIen, og egne unit tester for hver service fil. Jeg tester alle endpointene.
+- **Unit testing:** Jeg leste at Jest har lenge vert standard, men Vitest+Supertest er mer fremtidsrettet, spesielt for et TypeScript prosjekt. Jeg lager en testfil for departures.ts for å teste APIen, og egne unit tester for hver service fil. Jeg tester alle endpointene.
 
-- **Logging:** Jeg spurte Gemini hva den anbefalte for prosjektet og foreslo Winston eller pino. Jeg søkte litt rundt og fant at pino virker best for denne applikasjonen, gitt at den er lettere og har higher performance. Vi har ikke stor og kompleks nok logikk til å ha behov for Winston, slik det kan være i legacy systemer. Jeg logger til terminal output og ikke til fil fordi i enviroments som docker plukker den det opp for deg.
+- **Logging:** Jeg spurte Gemini hva den anbefalte for prosjektet, og foreslo Winston eller pino som svar. Jeg søkte litt rundt og fant at pino virker best for denne applikasjonen, gitt at den er lettere og har higher performance. Vi har ikke stor og kompleks nok logikk til å ha behov for Winston, slik det kan være i legacy systemer. Jeg logger til terminal output og ikke til fil fordi i enviroments som docker plukker den det opp for deg.
+
+- **Docker:** 
+  - DockerFile
+    - Jeg utfører et build stage og development stage separat for å holde buildet lite
+    - Legger til en node user for å følge "principle of least privilege"
+    - Fryser pnpm lockfile for å forhindre versjonforskjeller mellom dev-miljø og container
+  - docker-compose.yml
+    - Begrenser minne for memory leak proofing
 
 ## Ideer
 - Legg til shipId i DepartureResponse, alternativt skipnavn så det kan hentes informasjon om fasiliteter om bord fra en datamodell for skip
@@ -34,3 +42,5 @@ Jeg antar ruten ['Bergen', 'Stavanger', 'Hirtshals', 'Kristiansand'] også går 
 - Sette opp egen bookingliste for hver departure så det er raskere å søke etter manifestet.
 - Ta hensyn til tidssoner
 - La /departures bare returnere overfarter med tilgjengelig plass (dette var ikke helt klart for meg som krav eller ikke)
+- Bruke req.log.info() til å logge mer nyttig informasjon om request
+- 
